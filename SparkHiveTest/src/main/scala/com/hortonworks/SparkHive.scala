@@ -6,23 +6,30 @@ object SparkHive {
 
   def main(args: Array[String]): Unit =
   {
-    val spark =  SparkSession.builder().appName("SparkHiveIntegration")
+    val spark =  SparkSession.builder().appName("SparkHiveTest")
     .enableHiveSupport().getOrCreate()
+
+    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://HA2")
 
     val logger = LogManager.getRootLogger
 
-    logger.info("creating table test")
+    logger.info("project remote table")
 
-    spark.sql("create table test(id int)")
+    spark.sql("select * from test.remote_tbl").show
 
-    logger.info("Inserting data to table test")
+    logger.info("Inserting data to remote table")
 
-    spark.sql("insert into table test values(100)")
-    spark.sql( sqlText = "insert into table test values(200)")
+    spark.sql("insert into table test.remote_tbl values(100,'row1')")
 
-    logger.info("Projecting data from table test")
+    logger.info("Projecting data from remote table ")
 
-    spark.sql("select * from test").show()
+    spark.sql("select * from test.remote_tbl").show()
+
+    spark.sparkContext.hadoopConfiguration.set("fs.defaultFS", "hdfs://HA1")
+
+    spark.sql(" insert into table test.local_tbl values(100,'row1')").show()
+
+
   }
 
 }

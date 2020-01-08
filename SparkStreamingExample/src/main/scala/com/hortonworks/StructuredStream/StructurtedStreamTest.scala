@@ -12,6 +12,7 @@ import org.apache.spark.sql.types.{
 object StructurtedStreamTest {
 
     def main(args: Array[String]): Unit = {
+
       val sparkSession = SparkSession.builder
         .appName("example")
         .getOrCreate()
@@ -29,10 +30,12 @@ object StructurtedStreamTest {
         .csv("/tmp/input")
 
       val countDs = fileStreamDf.groupBy("customerId").sum("amountPaid")
+
       val query =
         countDs.writeStream
-          .format("console")
-          .option("checkpointLocation", "/tmp/checkpoint")
+          .format("csv")
+          .option("checkpointLocation", "hdfs:///tmp/checkpoint")
+          .option("path", "hdfs:///user/spark/structuredtest")
           .outputMode(OutputMode.Complete())
 
       query.start().awaitTermination()
